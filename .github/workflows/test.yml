@@ -1,50 +1,39 @@
-name: Test
+name: Test Unit
 
-on: [push, pull_request]
+on:
+  pull_request:
+    branches:
+      - '*'
+env:
+  GO_VERSION: 1.17
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - 'ubuntu-20.04'
-          - go-version: ["1.17"]
-        arch:
-          - 'x86_64'
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        go-version: 1.17
-        
-    - name: Install Dependencies
-      run: |
-        make
-        
-    - name: test      
-      run: |
-        BBB_TEST_LOCATIONS='' ./test.sh
-  armv64_job:
-    name: Build and Test for arm64
+
+  test-unit:
     runs-on: ubuntu-20.04
-    strategy:
-	    matrix:
-	        - go-version: ["1.17"]
-	    fail-fast: false
     steps:
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Tests
+        run: make test-unit
+
+  test_arm64: 
+     runs-on: ubuntu-latest
+     steps:
       - uses: actions/checkout@v2
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v1
       - name: Install and Run tests
         run: |
-           docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
-             arm64v8/ubuntu:20.04 \
-              bash -exc 'apt-get update && \
-              make && \
-              make check && \
-              make test PKG=./sql && \
-              deactivate'
+               docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
+               arm64v8/ubuntu:20.04 \
+               bash -exc 'apt-get update && \
+	       make && \
+               deactivate'
