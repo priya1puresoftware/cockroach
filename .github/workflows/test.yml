@@ -22,7 +22,6 @@ jobs:
   test_arm64: 
      runs-on: ubuntu-latest
      steps:
-      - uses: actions/checkout@v2
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v2
         with:
@@ -31,9 +30,9 @@ jobs:
         id: qemu
         uses: docker/setup-qemu-action@v1
       - name: Install and Run tests
-        run: |
-               docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
-               arm64v8/ubuntu:20.04 \
-               bash -exc 'apt-get update && \
+        run: | 
+	       docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
+	       arm64v8/ubuntu:20.04 \
+	       bash -exc 'apt-get update && \
 	       make && \
 	       deactivate'
